@@ -2,6 +2,17 @@
 use std::io::prelude::*;
 use std::net::TcpStream;
 
+#[derive(Debug)]
+pub struct Response {
+	headers: Vec<Header>,
+	body: String,
+}
+#[derive(Debug)]
+pub struct Header {
+	name: String,
+	value: String,
+}
+
 /// Sends XML to an rTorrent XML RPC server
 /// # Arguments
 /// * `TcpStream` - The TCP stream used to make a request
@@ -36,6 +47,43 @@ pub fn make_request(
 	let request_array: &[u8] = &request;
 	stream.write_all(request_array)?;
 	stream.read_to_end(buf)
+}
+
+/// Parses response from `make_request` to a `Response` struct
+/// # Arguments
+/// * `raw_response` - The raw response from `make_request`
+#[must_use]
+pub fn parse_response(raw_response: &[u8]) -> Option<Response> {
+	// TODO Stop this from allocating so many strings
+	let mut response = String::with_capacity(raw_response.len());
+
+	for ch in raw_response {
+		response.push(*ch as char)
+	}
+
+	// Split headers and body
+	let split_response: Vec<&str> = response.split("\r\n\r\n").collect();
+
+	if split_response.len() != 2 {
+		return None;
+	}
+	let headers = split_response.get(0)?;
+	let body = split_response.get(1)?;
+	let headers = headers.split("\r\n");
+	let mut headers_vec: Vec<Header> = Vec::new();
+	for header in headers {
+		let split: Vec<&str> = header.split(":").collect();
+
+		headers_vec.push(Header {
+			name: String::from(*split.get(0)?),
+			value: String::from(*split.get(1)?),
+		});
+	}
+
+	Some(Response {
+		headers: headers_vec,
+		body: String::from(*body),
+	})
 }
 
 fn generate_headers(xml: &str) -> Vec<String> {
