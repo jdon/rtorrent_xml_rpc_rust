@@ -1,6 +1,6 @@
 [package]
 name = "rtorrent_xml_rpc"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Jonathan Donaldson"]
 repository = "https://github.com/jdon/rtorrent_xml_rpc_rust"
 description = "A crate to send XML RPC to rtorrent"
