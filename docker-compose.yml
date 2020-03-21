@@ -1,0 +1,12 @@
+version: "3"
+services:
+  rtorrent:
+    image: tuxmealux/alpine-rtorrent:latest
+    ports:
+      - "50000:50000"
+      - "6881:6881"
+      - "6881:6881/udp"
+      - "16891:16891"
+    environment:
+      - PUID=1000
+      - PGID=1000
